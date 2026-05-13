@@ -2,8 +2,10 @@ import StyledButton from "@/components/button";
 import GroupCard from "@/components/group-card";
 import TextInputC from "@/components/text-input";
 import { COLORS } from "@/constants/colors";
-import { campusEvents, directChats } from "@/constants/mock-data";
+import { campusEvents } from "@/constants/mock-data";
 import { currentStudent } from "@/constants/student-profile";
+import useChats from "@/hooks/useChats";
+import useEvents from "@/hooks/useEvents";
 import useGroups from "@/hooks/useGroups";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
@@ -20,17 +22,9 @@ export default function Index() {
   const { joinedCount, unreadCount, filteredGroups, joinedGroups, toggleJoin } =
     useGroups(query);
 
-  const [savedEvents, setSavedEvents] = useState<string[]>(
-    currentStudent.savedEventIds,
-  );
+  const { directChats } = useChats();
 
-  const toggleEvent = (eventId: string) => {
-    setSavedEvents((current) =>
-      current.includes(eventId)
-        ? current.filter((id) => id !== eventId)
-        : [...current, eventId],
-    );
-  };
+  const { savedEvents, toggleEvent } = useEvents();
 
   return (
     <SafeAreaView style={styles.safeArea}>

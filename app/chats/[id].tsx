@@ -1,35 +1,14 @@
 import StyledButton from "@/components/button";
 import TextInputC from "@/components/text-input";
 import { COLORS } from "@/constants/colors";
-import { directChats } from "@/constants/mock-data";
+import useChats from "@/hooks/useChats";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { Link, Stack } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DirectChatScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const chat = directChats.find((item) => item.id === id) ?? directChats[0];
-  const [draft, setDraft] = useState("");
-  const [messages, setMessages] = useState([
-    { id: "1", from: chat.name, text: chat.lastMessage },
-    { id: "2", from: "You", text: "Yes. I will bring the first messy idea." },
-  ]);
-
-  const sendMessage = () => {
-    const trimmed = draft.trim();
-
-    if (!trimmed) {
-      return;
-    }
-
-    setMessages((current) => [
-      ...current,
-      { id: `${Date.now()}`, from: "You", text: trimmed },
-    ]);
-    setDraft("");
-  };
+  const { chat, draft, setDraft, messages, sendMessage } = useChats();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -55,8 +34,8 @@ export default function DirectChatScreen() {
         <View style={styles.callout}>
           <Ionicons name="shield-checkmark" size={20} color={COLORS.BLACK[3]} />
           <Text style={styles.calloutText}>
-            One-to-one chats are mocked locally here, ready for real chat presence
-            and delivery states later.
+            One-to-one chats are mocked locally here, ready for real chat
+            presence and delivery states later.
           </Text>
         </View>
 
@@ -65,7 +44,10 @@ export default function DirectChatScreen() {
             const mine = message.from === "You";
 
             return (
-              <View key={message.id} style={[styles.bubble, mine && styles.mine]}>
+              <View
+                key={message.id}
+                style={[styles.bubble, mine && styles.mine]}
+              >
                 <Text style={styles.messageFrom}>{message.from}</Text>
                 <Text style={styles.messageText}>{message.text}</Text>
               </View>

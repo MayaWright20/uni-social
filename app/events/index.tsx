@@ -38,14 +38,17 @@ export default function EventsScreen() {
 
           return (
             <View key={event.id} style={styles.eventCard}>
-              <View style={[styles.dateBlock, { backgroundColor: event.color }]}>
+              <View
+                style={[styles.dateBlock, { backgroundColor: event.color }]}
+              >
                 <Ionicons name="calendar" size={24} color={COLORS.BLACK[3]} />
               </View>
               <View style={styles.eventText}>
                 <Text style={styles.eventTitle}>{event.title}</Text>
                 <Text style={styles.eventMeta}>{event.groupName}</Text>
                 <Text style={styles.eventCopy}>
-                  {event.date} - {event.location} - {event.going + Number(active)} going
+                  {event.date} - {event.location} -{" "}
+                  {event.going + Number(active)} going
                 </Text>
               </View>
               <Pressable
