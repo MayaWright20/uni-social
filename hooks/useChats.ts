@@ -1,5 +1,5 @@
 import { directChats } from "@/constants/mock-data";
-import { ChatMessage } from "@/types/messages";
+import { ChatMessage, MessageStatus } from "@/types/messages";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 
@@ -7,6 +7,7 @@ export default function useChats() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const chat = directChats.find((item) => item.id === id) ?? directChats[0];
   const [draft, setDraft] = useState("");
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "1",
@@ -26,6 +27,7 @@ export default function useChats() {
 
   const sendMessage = () => {
     const trimmed = draft.trim();
+    const messageId = `${Date.now()}`;
 
     if (!trimmed) {
       return;
@@ -34,13 +36,41 @@ export default function useChats() {
     setMessages((current) => [
       ...current,
       {
-        id: `${Date.now()}`,
+        id: messageId,
         author: "You",
         text: trimmed,
         createdAt: new Date(),
         status: { type: "sending" },
       },
     ]);
+
+    const updateMessageStatus = (messageId: string, status: MessageStatus) => {
+      setMessages((current) =>
+        current.map((msg) => (msg.id === messageId ? { ...msg, status } : msg)),
+      );
+    };
+
+    setTimeout(() => {
+      updateMessageStatus(messageId, { type: "sent" });
+    }, 1000);
+
+    setTimeout(() => {
+      updateMessageStatus(messageId, { type: "delivered" });
+    }, 2000);
+
+    setTimeout(() => {
+      updateMessageStatus(messageId, { type: "read", readAt: new Date() });
+    }, 3000);
+
+    if (Math.random() < 0.3) {
+      setTimeout(() => {
+        updateMessageStatus(messageId, {
+          type: "failed",
+          error: "Network error",
+        });
+      }, 4000);
+    }
+
     setDraft("");
   };
 
@@ -53,5 +83,7 @@ export default function useChats() {
     setMessages,
     sendMessage,
     directChats,
+    isTyping,
+    setIsTyping,
   };
 }

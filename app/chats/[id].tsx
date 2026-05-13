@@ -4,83 +4,98 @@ import { COLORS } from "@/constants/colors";
 import useChats from "@/hooks/useChats";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+function flatlistHeader(chat: {
+  id: string;
+  name: string;
+  course: string;
+  lastMessage: string;
+  online: boolean;
+  color: string;
+}) {
+  return (
+    <View style={styles.header}>
+      <Link href="/" asChild>
+        <Pressable accessibilityRole="button" style={styles.iconButton}>
+          <Ionicons name="arrow-back" size={22} color={COLORS.BLACK[3]} />
+        </Pressable>
+      </Link>
+      <View style={[styles.avatar, { backgroundColor: chat.color }]}>
+        <Text style={styles.avatarText}>{chat.name.charAt(0)}</Text>
+      </View>
+      <View style={styles.headerText}>
+        <Text style={styles.name}>{chat.name}</Text>
+        <Text style={styles.course}>
+          {chat.course} - {chat.online ? "Online now" : "Back later"}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function flatlistMessage(message: {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: Date;
+  status: { type: string; readAt?: Date; error?: string };
+}) {
+  const mine = message.author === "You";
+
+  return (
+    <View key={message.id} style={[styles.bubble, mine && styles.mine]}>
+      <Text style={styles.messageFrom}>{message.author}</Text>
+      <Text style={styles.messageText}>{message.text}</Text>
+      {mine && (
+        <Ionicons
+          name={
+            message.status.type === "sending"
+              ? "time-outline"
+              : message.status.type === "sent"
+                ? "checkmark-outline"
+                : message.status.type === "read"
+                  ? "checkmark-done-outline"
+                  : "alert-circle-outline"
+          }
+          size={14}
+          color={COLORS.BLACK[2]}
+          style={{ marginTop: 4, alignSelf: "flex-end" }}
+        />
+      )}
+    </View>
+  );
+}
+
 export default function DirectChatScreen() {
-  const { chat, draft, setDraft, messages, sendMessage } = useChats();
+  const { chat, draft, setDraft, messages, sendMessage, isTyping } = useChats();
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ title: chat.name }} />
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Link href="/" asChild>
-            <Pressable accessibilityRole="button" style={styles.iconButton}>
-              <Ionicons name="arrow-back" size={22} color={COLORS.BLACK[3]} />
-            </Pressable>
-          </Link>
-          <View style={[styles.avatar, { backgroundColor: chat.color }]}>
-            <Text style={styles.avatarText}>{chat.name.charAt(0)}</Text>
-          </View>
-          <View style={styles.headerText}>
-            <Text style={styles.name}>{chat.name}</Text>
-            <Text style={styles.course}>
-              {chat.course} - {chat.online ? "Online now" : "Back later"}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.callout}>
-          <Ionicons name="shield-checkmark" size={20} color={COLORS.BLACK[3]} />
-          <Text style={styles.calloutText}>
-            One-to-one chats are mocked locally here, ready for real chat
-            presence and delivery states later.
-          </Text>
-        </View>
-
-        <View style={styles.messages}>
-          {messages.map((message) => {
-            const mine = message.author === "You";
-            return (
-              <View
-                key={message.id}
-                style={[styles.bubble, mine && styles.mine]}
-              >
-                <Text style={styles.messageFrom}>{message.author}</Text>
-                <Text style={styles.messageText}>{message.text}</Text>
-                {mine && (
-                  <Ionicons
-                    name={
-                      message.status.type === "sending"
-                        ? "time-outline"
-                        : message.status.type === "sent"
-                          ? "checkmark-outline"
-                          : message.status.type === "read"
-                            ? "checkmark-done-outline"
-                            : "alert-circle-outline"
-                    }
-                    size={14}
-                    color={COLORS.BLACK[2]}
-                    style={{ marginTop: 4, alignSelf: "flex-end" }}
-                  />
-                )}
-              </View>
-            );
-          })}
-        </View>
-
-        <View style={styles.composer}>
-          <TextInputC
-            accessibilityLabel={`Message ${chat.name}`}
-            placeholder="Type a reply"
-            value={draft}
-            onChangeText={setDraft}
-            style={styles.input}
-          />
-          <StyledButton title="Send" onPress={sendMessage} />
-        </View>
-      </ScrollView>
+      <View style={styles.messages}>
+        <FlatList
+          contentContainerStyle={styles.container}
+          data={messages}
+          renderItem={({ item }) => flatlistMessage(item)}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={() => flatlistHeader(chat)}
+        />
+        {isTyping && (
+          <Text style={styles.typingIndicator}>{chat.name} is Typing</Text>
+        )}
+      </View>
+      <View style={styles.composer}>
+        <TextInputC
+          accessibilityLabel={`Message ${chat.name}`}
+          placeholder="Type a reply"
+          value={draft}
+          onChangeText={setDraft}
+          style={styles.input}
+        />
+        <StyledButton title="Send" onPress={sendMessage} />
+      </View>
     </SafeAreaView>
   );
 }
@@ -114,6 +129,13 @@ const styles = StyleSheet.create({
     height: 42,
     justifyContent: "center",
     width: 42,
+  },
+  typingIndicator: {
+    color: COLORS.BLACK[2],
+    fontSize: 13,
+    fontWeight: "800",
+    fontStyle: "italic",
+    paddingLeft: 4,
   },
   avatar: {
     alignItems: "center",
@@ -190,6 +212,7 @@ const styles = StyleSheet.create({
   composer: {
     flexDirection: "row",
     gap: 8,
+    padding: 18,
   },
   input: {
     flex: 1,
