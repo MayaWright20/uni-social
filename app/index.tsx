@@ -2,6 +2,7 @@ import StyledButton from "@/components/button";
 import TextInputC from "@/components/text-input";
 import { COLORS } from "@/constants/colors";
 import { campusEvents, campusGroups, directChats } from "@/constants/mock-data";
+import { currentStudent } from "@/constants/student-profile";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
@@ -13,8 +14,12 @@ type Tab = "groups" | "chats" | "events";
 export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>("groups");
   const [query, setQuery] = useState("");
-  const [joinedGroups, setJoinedGroups] = useState<string[]>(["film", "code"]);
-  const [savedEvents, setSavedEvents] = useState<string[]>(["e1"]);
+  const [joinedGroups, setJoinedGroups] = useState<string[]>(
+    currentStudent.joinedGroupIds,
+  );
+  const [savedEvents, setSavedEvents] = useState<string[]>(
+    currentStudent.savedEventIds,
+  );
 
   const filteredGroups = useMemo(() => {
     return campusGroups.filter((group) =>
@@ -50,6 +55,9 @@ export default function Index() {
           <View style={styles.heroTop}>
             <View>
               <Text style={styles.eyebrow}>Uni Social</Text>
+              <Text style={styles.eyebrow}>
+                Welcome back, {currentStudent.name}
+              </Text>
               <Text style={styles.title}>
                 Find your people between lectures.
               </Text>
