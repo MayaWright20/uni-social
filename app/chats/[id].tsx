@@ -40,19 +40,35 @@ export default function DirectChatScreen() {
         </View>
 
         <View style={styles.messages}>
+          {" "}
           {messages.map((message) => {
-            const mine = message.from === "You";
-
+            const mine = message.author === "You";
             return (
               <View
                 key={message.id}
                 style={[styles.bubble, mine && styles.mine]}
               >
-                <Text style={styles.messageFrom}>{message.from}</Text>
+                <Text style={styles.messageFrom}>{message.author}</Text>
                 <Text style={styles.messageText}>{message.text}</Text>
+                {mine && (
+                  <Ionicons
+                    name={
+                      message.status.type === "sending"
+                        ? "time-outline"
+                        : message.status.type === "sent"
+                          ? "checkmark-outline"
+                          : message.status.type === "read"
+                            ? "checkmark-done-outline"
+                            : "alert-circle-outline"
+                    }
+                    size={14}
+                    color={COLORS.BLACK[2]}
+                    style={{ marginTop: 4, alignSelf: "flex-end" }}
+                  />
+                )}
               </View>
             );
-          })}
+          })}{" "}
         </View>
 
         <View style={styles.composer}>
