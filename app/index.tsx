@@ -1,11 +1,13 @@
 import StyledButton from "@/components/button";
+import GroupCard from "@/components/group-card";
 import TextInputC from "@/components/text-input";
 import { COLORS } from "@/constants/colors";
-import { campusEvents, campusGroups, directChats } from "@/constants/mock-data";
+import { campusEvents, directChats } from "@/constants/mock-data";
 import { currentStudent } from "@/constants/student-profile";
+import useGroups from "@/hooks/useGroups";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -14,46 +16,13 @@ type Tab = "groups" | "chats" | "events";
 export default function Index() {
   const [activeTab, setActiveTab] = useState<Tab>("groups");
   const [query, setQuery] = useState("");
-  const [joinedGroups, setJoinedGroups] = useState<string[]>(
-    currentStudent.joinedGroupIds,
-  );
+
+  const { joinedCount, unreadCount, filteredGroups, joinedGroups, toggleJoin } =
+    useGroups(query);
+
   const [savedEvents, setSavedEvents] = useState<string[]>(
     currentStudent.savedEventIds,
   );
-
-  const filteredGroups = useMemo(() => {
-    const searchTerm = query.trim().toLowerCase();
-
-    if (!searchTerm) {
-      return campusGroups;
-    }
-
-    return campusGroups.filter((group) => {
-      const searchableText = [
-        group.name,
-        group.tagline,
-        group.vibe,
-        ...group.channels,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return searchableText.includes(searchTerm);
-    });
-  }, [query]);
-
-  const joinedCount = joinedGroups.length;
-  const unreadCount = campusGroups
-    .filter((group) => joinedGroups.includes(group.id))
-    .reduce((total, group) => total + group.unread, 0);
-
-  const toggleJoin = (groupId: string) => {
-    setJoinedGroups((current) =>
-      current.includes(groupId)
-        ? current.filter((id) => id !== groupId)
-        : [...current, groupId],
-    );
-  };
 
   const toggleEvent = (eventId: string) => {
     setSavedEvents((current) =>
@@ -150,49 +119,13 @@ export default function Index() {
         {activeTab === "groups" && (
           <View style={styles.section}>
             {filteredGroups.map((group) => {
-              const joined = joinedGroups.includes(group.id);
-
               return (
-                <View
+                <GroupCard
                   key={group.id}
-                  style={[styles.groupCard, { backgroundColor: group.color }]}
-                >
-                  <View style={styles.groupHeader}>
-                    <View
-                      style={[styles.blob, { backgroundColor: group.accent }]}
-                    >
-                      <Text style={styles.blobText}>
-                        {group.name.slice(0, 2)}
-                      </Text>
-                    </View>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`${joined ? "Leave" : "Join"} ${group.name}`}
-                      onPress={() => toggleJoin(group.id)}
-                      style={[
-                        styles.joinPill,
-                        joined && { backgroundColor: COLORS.WHITE[0] },
-                      ]}
-                    >
-                      <Text style={styles.joinText}>
-                        {joined ? "Joined" : "Join"}
-                      </Text>
-                    </Pressable>
-                  </View>
-
-                  <Link href={`/groups/${group.id}`} asChild>
-                    <Pressable>
-                      <Text style={styles.cardTitle}>{group.name}</Text>
-                      <Text style={styles.cardCopy}>{group.tagline}</Text>
-                    </Pressable>
-                  </Link>
-
-                  <View style={styles.metaRow}>
-                    <Meta icon="radio" text={group.vibe} />
-                    <Meta icon="people" text={`${group.members} members`} />
-                    <Meta icon="chatbubble" text={`${group.unread} new`} />
-                  </View>
-                </View>
+                  group={group}
+                  joined={joinedGroups.includes(group.id)}
+                  onToggleJoin={toggleJoin}
+                />
               );
             })}
           </View>
@@ -311,21 +244,6 @@ function TabButton({
         {label}
       </Text>
     </Pressable>
-  );
-}
-
-function Meta({
-  icon,
-  text,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  text: string;
-}) {
-  return (
-    <View style={styles.meta}>
-      <Ionicons name={icon} size={14} color={COLORS.BLACK[3]} />
-      <Text style={styles.metaText}>{text}</Text>
-    </View>
   );
 }
 
