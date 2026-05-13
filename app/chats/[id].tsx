@@ -40,7 +40,6 @@ export default function DirectChatScreen() {
         </View>
 
         <View style={styles.messages}>
-          {" "}
           {messages.map((message) => {
             const mine = message.author === "You";
             return (
@@ -68,7 +67,7 @@ export default function DirectChatScreen() {
                 )}
               </View>
             );
-          })}{" "}
+          })}
         </View>
 
         <View style={styles.composer}>
