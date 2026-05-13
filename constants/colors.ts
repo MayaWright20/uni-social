@@ -27,6 +27,20 @@ export const COLORS = {
   },
   BLUE: {
     0: "#8ED0FF",
+    1: "#1FA7FF",
+    2: "#2457D6",
+  },
+  ORANGE: {
+    0: "#FFB86B",
+    1: "#FF7A1A",
+  },
+  TEAL: {
+    0: "#96F2D7",
+    1: "#12BFA4",
+  },
+  LIME: {
+    0: "#D7FF6B",
+    1: "#9EE01A",
   },
   BLACK: {
     0: "#cdcac7",
