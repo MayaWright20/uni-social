@@ -22,9 +22,24 @@ export default function Index() {
   );
 
   const filteredGroups = useMemo(() => {
-    return campusGroups.filter((group) =>
-      group.name.toLowerCase().includes(query.toLowerCase()),
-    );
+    const searchTerm = query.trim().toLowerCase();
+
+    if (!searchTerm) {
+      return campusGroups;
+    }
+
+    return campusGroups.filter((group) => {
+      const searchableText = [
+        group.name,
+        group.tagline,
+        group.vibe,
+        ...group.channels,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(searchTerm);
+    });
   }, [query]);
 
   const joinedCount = joinedGroups.length;
